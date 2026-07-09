@@ -46,11 +46,8 @@ CSRF_TRUSTED_ORIGINS = [
 #     },
 # }
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 INSTALLED_APPS = [
-    "cloudinary_storage",
-    "cloudinary",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

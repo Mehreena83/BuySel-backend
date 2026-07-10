@@ -1,11 +1,18 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Property, Inquiry
+from .models import Property, Inquiry, PropertyImage
+
+
+class PropertyImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropertyImage
+        fields = ["id", "image"]
 
 
 class PropertySerializer(serializers.ModelSerializer):
     agent_name = serializers.CharField(source="agent.username", read_only=True)
     is_expired = serializers.SerializerMethodField()
+    images = PropertyImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property
@@ -29,6 +36,7 @@ class PropertySerializer(serializers.ModelSerializer):
             "is_expired",
             "edit_locked",
             "created_at",
+            "images",
         ]
         read_only_fields = [
             "agent",

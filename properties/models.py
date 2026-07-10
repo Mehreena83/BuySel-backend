@@ -51,6 +51,16 @@ class Property(models.Model):
         return self.title
 
 
+class PropertyImage(models.Model):
+    property = models.ForeignKey(
+        Property, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField(upload_to="properties/gallery/")
+
+    def __str__(self):
+        return self.property.title
+
+
 class Inquiry(models.Model):
     property = models.ForeignKey(
         Property, on_delete=models.CASCADE, related_name="inquiries"

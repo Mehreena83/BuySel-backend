@@ -11,7 +11,8 @@ from rest_framework import status
 
 from plans.models import Plan, Subscription
 from .models import Payment
-
+from rest_framework import generics
+from .serializers import PaymentHistorySerializer
 
 class CreateOrderView(APIView):
     permission_classes = [IsAuthenticated]
@@ -131,3 +132,11 @@ class VerifyPaymentView(APIView):
                 {"error": "Payment verification failed"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class PaymentHistoryView(generics.ListAPIView):
+    serializer_class = PaymentHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Payment.objects.filter(user=self.request.user).order_by("-created_at")

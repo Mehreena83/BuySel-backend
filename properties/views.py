@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.utils import timezone
 
-from .models import Property, Inquiry
+from .models import Property, Inquiry, PropertyImage
 from .serializers import PropertySerializer, InquirySerializer
 from plans.models import Subscription
 
@@ -53,18 +53,42 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
 
+        # if serializer.is_valid():
+        #     serializer.save(
+        #         agent=request.user,
+        #         status="pending",
+        #         expires_at=subscription.end_date,
+        #         edit_locked=False,
+        #     )
+
+        #     subscription.property_used += 1
+        #     subscription.save()
+
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         if serializer.is_valid():
-            serializer.save(
+            property_obj = serializer.save(
                 agent=request.user,
                 status="pending",
                 expires_at=subscription.end_date,
                 edit_locked=False,
             )
 
-            subscription.property_used += 1
-            subscription.save()
+        gallery_images = request.FILES.getlist("gallery_images")
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        for image in gallery_images:
+            PropertyImage.objects.create(
+                property=property_obj,
+                image=image,
+            )
+
+        subscription.property_used += 1
+        subscription.save()
+
+        return Response(
+            PropertySerializer(property_obj).data,
+            status=status.HTTP_201_CREATED,
+        )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

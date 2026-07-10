@@ -16,82 +16,68 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
             return Property.objects.none()
 
         return Property.objects.filter(agent=self.request.user).order_by("-created_at")
-
     def create(self, request, *args, **kwargs):
-        if request.user.role != "agent":
-            return Response(
-                {"error": "Only agents can add properties."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            if request.user.role != "agent":
+                return Response(
+                    {"error": "Only agents can add properties."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
-        subscription = Subscription.objects.filter(
-            user=request.user, is_active=True
-        ).first()
+            subscription = Subscription.objects.filter(
+                user=request.user,
+                is_active=True
+            ).first()
 
-        if not subscription:
-            return Response(
-                {"error": "Please choose a plan before adding property."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            if not subscription:
+                return Response(
+                    {"error": "Please choose a plan before adding property."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        today = timezone.now().date()
+            today = timezone.now().date()
 
-        if subscription.end_date < today:
-            subscription.is_active = False
-            subscription.save()
+            if subscription.end_date < today:
+                subscription.is_active = False
+                subscription.save()
 
-            return Response(
-                {"error": "Your plan has expired. Please choose a new plan."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+                return Response(
+                    {"error": "Your plan has expired. Please choose a new plan."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        if subscription.remaining_limit() <= 0:
-            return Response(
-                {"error": "Your property limit is over. Please upgrade your plan."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            if subscription.remaining_limit() <= 0:
+                return Response(
+                    {"error": "Your property limit is over. Please upgrade your plan."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        serializer = self.get_serializer(data=request.data)
+            serializer = self.get_serializer(data=request.data)
 
-        # if serializer.is_valid():
-        #     serializer.save(
-        #         agent=request.user,
-        #         status="pending",
-        #         expires_at=subscription.end_date,
-        #         edit_locked=False,
-        #     )
+            if serializer.is_valid():
+                property_obj = serializer.save(
+                    agent=request.user,
+                    status="pending",
+                    expires_at=subscription.end_date,
+                    edit_locked=False,
+                )
 
-        #     subscription.property_used += 1
-        #     subscription.save()
+                gallery_images = request.FILES.getlist("gallery_images")
 
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+                for image in gallery_images:
+                    PropertyImage.objects.create(
+                        property=property_obj,
+                        image=image,
+                    )
 
-        if serializer.is_valid():
-            property_obj = serializer.save(
-                agent=request.user,
-                status="pending",
-                expires_at=subscription.end_date,
-                edit_locked=False,
-            )
+                subscription.property_used += 1
+                subscription.save()
 
-        gallery_images = request.FILES.getlist("gallery_images")
+                return Response(
+                    PropertySerializer(property_obj).data,
+                    status=status.HTTP_201_CREATED,
+                )
 
-        for image in gallery_images:
-            PropertyImage.objects.create(
-                property=property_obj,
-                image=image,
-            )
-
-        subscription.property_used += 1
-        subscription.save()
-
-        return Response(
-            PropertySerializer(property_obj).data,
-            status=status.HTTP_201_CREATED,
-        )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PropertySerializer

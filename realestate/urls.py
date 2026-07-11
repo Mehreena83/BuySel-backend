@@ -9,7 +9,6 @@ urlpatterns = [
     path("api/plans/", include("plans.urls")),
     path("api/payments/", include("payments.urls")),
     path("api/properties/", include("properties.urls")),
-
     # Media files serve for Render demo hosting
     re_path(
         r"^media/(?P<path>.*)$",

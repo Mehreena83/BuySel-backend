@@ -1,4 +1,5 @@
 # import json
+
 # from rest_framework import generics, permissions, status
 # from rest_framework.response import Response
 # from django.utils import timezone
@@ -6,6 +7,22 @@
 # from .models import Property, Inquiry, PropertyImage
 # from .serializers import PropertySerializer, InquirySerializer
 # from plans.models import Subscription
+
+
+# def parse_details(details):
+#     if not details:
+#         return {}
+
+#     if isinstance(details, dict):
+#         return details
+
+#     if isinstance(details, str):
+#         try:
+#             return json.loads(details)
+#         except json.JSONDecodeError:
+#             return {}
+
+#     return {}
 
 
 # class MyPropertyListCreateView(generics.ListCreateAPIView):
@@ -17,16 +34,17 @@
 #             return Property.objects.none()
 
 #         return Property.objects.filter(agent=self.request.user).order_by("-created_at")
-#         def create(self, request, *args, **kwargs):
-#             if request.user.role != "agent":
-#                 return Response(
+
+#     def create(self, request, *args, **kwargs):
+#         if request.user.role != "agent":
+#             return Response(
 #                 {"error": "Only agents can add properties."},
 #                 status=status.HTTP_403_FORBIDDEN,
 #             )
 
 #         subscription = Subscription.objects.filter(
 #             user=request.user,
-#             is_active=True
+#             is_active=True,
 #         ).first()
 
 #         if not subscription:
@@ -54,13 +72,7 @@
 
 #         data = request.data.copy()
 
-#         details = data.get("details")
-#         if isinstance(details, str):
-#             try:
-#                 data["details"] = json.loads(details)
-#             except json.JSONDecodeError:
-#                 data["details"] = {}
-
+#         data["details"] = parse_details(request.data.get("details"))
 #         serializer = self.get_serializer(data=data)
 
 #         if serializer.is_valid():
@@ -90,6 +102,35 @@
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# # class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
+# #     serializer_class = PropertySerializer
+# #     permission_classes = [permissions.IsAuthenticated]
+
+# #     def get_queryset(self):
+# #         if self.request.user.role != "agent":
+# #             return Property.objects.none()
+
+# #         return Property.objects.filter(agent=self.request.user)
+
+# #     def update(self, request, *args, **kwargs):
+# #         property_obj = self.get_object()
+
+# #         if property_obj.edit_locked:
+# #             return Response(
+# #                 {
+# #                     "error": "This property cannot be edited after renewal. You can delete it only."
+# #                 },
+# #                 status=status.HTTP_403_FORBIDDEN,
+# #             )
+
+# #         return super().update(request, *args, **kwargs)
+
+
+# # def perform_update(self, serializer):
+# #     parsed_details = parse_details(self.request.data.get("details"))
+# #     serializer.save(status="pending", details=parsed_details)
+
+
 # class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
 #     serializer_class = PropertySerializer
 #     permission_classes = [permissions.IsAuthenticated]
@@ -113,23 +154,21 @@
 
 #         return super().update(request, *args, **kwargs)
 
-# def perform_update(self, serializer):
-#     details = self.request.data.get("details")
+#     def perform_update(self, serializer):
+#         parsed_details = parse_details(self.request.data.get("details"))
 
-#     parsed_details = None
+#         property_obj = serializer.save(
+#             status="pending",
+#             details=parsed_details,
+#         )
 
-#     if isinstance(details, str):
-#         try:
-#             parsed_details = json.loads(details)
-#         except json.JSONDecodeError:
-#             parsed_details = {}
-#     elif isinstance(details, dict):
-#         parsed_details = details
+#         gallery_images = self.request.FILES.getlist("gallery_images")
 
-#     if parsed_details is not None:
-#         serializer.save(status="pending", details=parsed_details)
-#     else:
-#         serializer.save(status="pending")
+#         for image in gallery_images:
+#             PropertyImage.objects.create(
+#                 property=property_obj,
+#                 image=image,
+#             )
 
 
 # class ApprovedPropertyListView(generics.ListAPIView):
@@ -140,7 +179,8 @@
 #         today = timezone.now().date()
 
 #         queryset = Property.objects.filter(
-#             status="approved", expires_at__gte=today
+#             status="approved",
+#             expires_at__gte=today,
 #         ).order_by("-created_at")
 
 #         listing_type = self.request.query_params.get("listing_type")
@@ -166,7 +206,10 @@
 #     def get_queryset(self):
 #         today = timezone.now().date()
 
-#         return Property.objects.filter(status="approved", expires_at__gte=today)
+#         return Property.objects.filter(
+#             status="approved",
+#             expires_at__gte=today,
+#         )
 
 
 # class CreateInquiryView(generics.CreateAPIView):
@@ -213,6 +256,7 @@
 #         return Inquiry.objects.filter(property__agent=self.request.user).order_by(
 #             "-created_at"
 #         )
+
 
 
 import json
@@ -289,7 +333,11 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
 
         data = request.data.copy()
 
-        data["details"] = parse_details(request.data.get("details"))
+        parsed_details = parse_details(request.data.get("details"))
+
+        if "details" in data:
+            data.pop("details")
+
         serializer = self.get_serializer(data=data)
 
         if serializer.is_valid():
@@ -298,6 +346,7 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
                 status="pending",
                 expires_at=subscription.end_date,
                 edit_locked=False,
+                details=parsed_details,
             )
 
             gallery_images = request.FILES.getlist("gallery_images")
@@ -317,35 +366,6 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     serializer_class = PropertySerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def get_queryset(self):
-#         if self.request.user.role != "agent":
-#             return Property.objects.none()
-
-#         return Property.objects.filter(agent=self.request.user)
-
-#     def update(self, request, *args, **kwargs):
-#         property_obj = self.get_object()
-
-#         if property_obj.edit_locked:
-#             return Response(
-#                 {
-#                     "error": "This property cannot be edited after renewal. You can delete it only."
-#                 },
-#                 status=status.HTTP_403_FORBIDDEN,
-#             )
-
-#         return super().update(request, *args, **kwargs)
-
-
-# def perform_update(self, serializer):
-#     parsed_details = parse_details(self.request.data.get("details"))
-#     serializer.save(status="pending", details=parsed_details)
 
 
 class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):

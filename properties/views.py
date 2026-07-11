@@ -319,6 +319,35 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     serializer_class = PropertySerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def get_queryset(self):
+#         if self.request.user.role != "agent":
+#             return Property.objects.none()
+
+#         return Property.objects.filter(agent=self.request.user)
+
+#     def update(self, request, *args, **kwargs):
+#         property_obj = self.get_object()
+
+#         if property_obj.edit_locked:
+#             return Response(
+#                 {
+#                     "error": "This property cannot be edited after renewal. You can delete it only."
+#                 },
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         return super().update(request, *args, **kwargs)
+
+
+# def perform_update(self, serializer):
+#     parsed_details = parse_details(self.request.data.get("details"))
+#     serializer.save(status="pending", details=parsed_details)
+
+
 class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PropertySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -342,10 +371,21 @@ class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return super().update(request, *args, **kwargs)
 
+    def perform_update(self, serializer):
+        parsed_details = parse_details(self.request.data.get("details"))
 
-def perform_update(self, serializer):
-    parsed_details = parse_details(self.request.data.get("details"))
-    serializer.save(status="pending", details=parsed_details)
+        property_obj = serializer.save(
+            status="pending",
+            details=parsed_details,
+        )
+
+        gallery_images = self.request.FILES.getlist("gallery_images")
+
+        for image in gallery_images:
+            PropertyImage.objects.create(
+                property=property_obj,
+                image=image,
+            )
 
 
 class ApprovedPropertyListView(generics.ListAPIView):

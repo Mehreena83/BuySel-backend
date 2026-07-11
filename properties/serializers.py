@@ -30,6 +30,7 @@ class PropertySerializer(serializers.ModelSerializer):
             "bedrooms",
             "bathrooms",
             "area_sqft",
+            "details",
             "main_image",
             "status",
             "expires_at",

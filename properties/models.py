@@ -39,6 +39,7 @@ class Property(models.Model):
     bedrooms = models.PositiveIntegerField(default=0)
     bathrooms = models.PositiveIntegerField(default=0)
     area_sqft = models.PositiveIntegerField(blank=True, null=True)
+    details = models.JSONField(default=dict, blank=True)
 
     main_image = models.ImageField(upload_to="properties/", blank=True, null=True)
 

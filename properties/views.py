@@ -90,8 +90,6 @@
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 # class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
 #     serializer_class = PropertySerializer
 #     permission_classes = [permissions.IsAuthenticated]
@@ -217,8 +215,6 @@
 #         )
 
 
-
-
 import json
 
 from rest_framework import generics, permissions, status
@@ -228,6 +224,22 @@ from django.utils import timezone
 from .models import Property, Inquiry, PropertyImage
 from .serializers import PropertySerializer, InquirySerializer
 from plans.models import Subscription
+
+
+def parse_details(details):
+    if not details:
+        return {}
+
+    if isinstance(details, dict):
+        return details
+
+    if isinstance(details, str):
+        try:
+            return json.loads(details)
+        except json.JSONDecodeError:
+            return {}
+
+    return {}
 
 
 class MyPropertyListCreateView(generics.ListCreateAPIView):
@@ -277,13 +289,7 @@ class MyPropertyListCreateView(generics.ListCreateAPIView):
 
         data = request.data.copy()
 
-        details = data.get("details")
-        if isinstance(details, str):
-            try:
-                data["details"] = json.loads(details)
-            except json.JSONDecodeError:
-                data["details"] = {}
-
+        data["details"] = parse_details(request.data.get("details"))
         serializer = self.get_serializer(data=data)
 
         if serializer.is_valid():
@@ -336,23 +342,10 @@ class MyPropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return super().update(request, *args, **kwargs)
 
-    def perform_update(self, serializer):
-        details = self.request.data.get("details")
 
-        parsed_details = None
-
-        if isinstance(details, str):
-            try:
-                parsed_details = json.loads(details)
-            except json.JSONDecodeError:
-                parsed_details = {}
-        elif isinstance(details, dict):
-            parsed_details = details
-
-        if parsed_details is not None:
-            serializer.save(status="pending", details=parsed_details)
-        else:
-            serializer.save(status="pending")
+def perform_update(self, serializer):
+    parsed_details = parse_details(self.request.data.get("details"))
+    serializer.save(status="pending", details=parsed_details)
 
 
 class ApprovedPropertyListView(generics.ListAPIView):
@@ -437,6 +430,6 @@ class MyInquiriesListView(generics.ListAPIView):
         if self.request.user.role != "agent":
             return Inquiry.objects.none()
 
-        return Inquiry.objects.filter(
-            property__agent=self.request.user
-        ).order_by("-created_at")
+        return Inquiry.objects.filter(property__agent=self.request.user).order_by(
+            "-created_at"
+        )

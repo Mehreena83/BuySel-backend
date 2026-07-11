@@ -3,12 +3,10 @@ from datetime import timedelta
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-
 from plans.models import Plan, Subscription
 from .models import Payment
 from rest_framework import generics
@@ -65,7 +63,6 @@ class CreateOrderView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-
 class VerifyPaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -101,8 +98,19 @@ class VerifyPaymentView(APIView):
                 }
             )
 
+            payment_method = None
+
+            try:
+                payment_details = client.payment.fetch(razorpay_payment_id)
+                payment_method = payment_details.get("method")
+                print("RAZORPAY PAYMENT DETAILS:", payment_details)
+                print("PAYMENT METHOD:", payment_method)
+            except Exception as fetch_error:
+                print("RAZORPAY PAYMENT FETCH ERROR:", fetch_error)
+
             payment.razorpay_payment_id = razorpay_payment_id
             payment.razorpay_signature = razorpay_signature
+            payment.payment_method = payment_method
             payment.status = "success"
             payment.save()
 
@@ -121,19 +129,22 @@ class VerifyPaymentView(APIView):
             )
 
             return Response(
-                {"message": "Payment verified and plan activated successfully"}
+                {
+                    "message": "Payment verified and plan activated successfully",
+                    "payment_method": payment.payment_method,
+                }
             )
 
-        except Exception:
+        except Exception as error:
+            print("PAYMENT VERIFY ERROR:", error)
+
             payment.status = "failed"
             payment.save()
 
             return Response(
-                {"error": "Payment verification failed"},
+                {"error": "Payment verification failed", "details": str(error)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
 class PaymentHistoryView(generics.ListAPIView):
     serializer_class = PaymentHistorySerializer
     permission_classes = [IsAuthenticated]

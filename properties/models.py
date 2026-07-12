@@ -40,6 +40,37 @@ class Property(models.Model):
     bathrooms = models.PositiveIntegerField(default=0)
     area_sqft = models.PositiveIntegerField(blank=True, null=True)
     details = models.JSONField(default=dict, blank=True)
+    # House / Villa / Apartment common
+    total_rooms = models.PositiveIntegerField(blank=True, null=True)
+    floors = models.PositiveIntegerField(blank=True, null=True)
+
+    # Apartment
+    floor_number = models.PositiveIntegerField(blank=True, null=True)
+    total_floors = models.PositiveIntegerField(blank=True, null=True)
+    furnishing = models.CharField(max_length=50, blank=True, null=True)
+
+    # Villa / Commercial
+    parking = models.CharField(max_length=50, blank=True, null=True)
+
+    # Land
+    total_cent = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+    price_per_cent = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+    road_access = models.CharField(max_length=100, blank=True, null=True)
+    plot_type = models.CharField(max_length=50, blank=True, null=True)
+
+    # Commercial
+    commercial_type = models.CharField(max_length=50, blank=True, null=True)
+    builtup_area_sqft = models.PositiveIntegerField(blank=True, null=True)
 
     main_image = models.ImageField(upload_to="properties/", blank=True, null=True)
 

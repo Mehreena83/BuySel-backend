@@ -33,17 +33,21 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 INSTALLED_APPS = [
-        "cloudinary_storage",
+    "cloudinary_storage",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-        "cloudinary",
+
+    "cloudinary",
+
     "rest_framework",
     "corsheaders",
     "rest_framework.authtoken",
+
     "accounts",
     "plans",
     "payments",

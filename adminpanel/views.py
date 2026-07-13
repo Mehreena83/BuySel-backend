@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework import generics, status
-from rest_framework.permissions import IsAdminUser
+from .permissions import IsMasterAdmin
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -57,7 +57,7 @@ class AdminLoginView(APIView):
         )
 
 class AdminDashboardStatsView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def get(self, request):
         data = {
@@ -79,7 +79,7 @@ class AdminDashboardStatsView(APIView):
 
 class AdminPropertyListView(generics.ListAPIView):
     serializer_class = AdminPropertySerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def get_queryset(self):
         queryset = Property.objects.all().order_by("-created_at")
@@ -101,7 +101,7 @@ class AdminPropertyListView(generics.ListAPIView):
 
 
 class AdminApprovePropertyView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def patch(self, request, pk):
         property_obj = get_object_or_404(Property, id=pk)
@@ -118,7 +118,7 @@ class AdminApprovePropertyView(APIView):
 
 
 class AdminRejectPropertyView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def patch(self, request, pk):
         property_obj = get_object_or_404(Property, id=pk)
@@ -136,7 +136,7 @@ class AdminRejectPropertyView(APIView):
 
 class AdminUserListView(generics.ListAPIView):
     serializer_class = AdminUserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def get_queryset(self):
         return User.objects.all().order_by("-date_joined")
@@ -144,7 +144,7 @@ class AdminUserListView(generics.ListAPIView):
 
 class AdminPlanListView(generics.ListAPIView):
     serializer_class = AdminPlanSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def get_queryset(self):
         return Plan.objects.all().order_by("price")
@@ -152,7 +152,7 @@ class AdminPlanListView(generics.ListAPIView):
 
 class AdminSubscriptionListView(generics.ListAPIView):
     serializer_class = AdminSubscriptionSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def get_queryset(self):
         return Subscription.objects.all().order_by("-start_date")
@@ -160,7 +160,7 @@ class AdminSubscriptionListView(generics.ListAPIView):
 
 class AdminPaymentListView(generics.ListAPIView):
     serializer_class = AdminPaymentSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsMasterAdmin]
 
     def get_queryset(self):
         return Payment.objects.all().order_by("-created_at")

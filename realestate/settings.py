@@ -195,3 +195,9 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 WHITENOISE_AUTOREFRESH = True
 WHITENOISE_USE_FINDERS = True
+
+
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

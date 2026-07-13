@@ -13,18 +13,48 @@ from django.shortcuts import get_object_or_404
 from properties.models import Property
 from plans.models import Plan, Subscription
 from payments.models import Payment
-
+from rest_framework.authtoken.models import Token
 from .serializers import (
     AdminUserSerializer,
     AdminPropertySerializer,
     AdminPlanSerializer,
     AdminSubscriptionSerializer,
     AdminPaymentSerializer,
+    AdminLoginSerializer,
 )
 
 
 User = get_user_model()
 
+class AdminLoginView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        serializer = AdminLoginSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.validated_data["user"]
+
+            token, created = Token.objects.get_or_create(user=user)
+
+            return Response(
+                {
+                    "token": token.key,
+                    "admin": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "admin_title": user.admin_profile.admin_title,
+                        "is_master_admin": user.admin_profile.is_master_admin,
+                    },
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 class AdminDashboardStatsView(APIView):
     permission_classes = [IsAdminUser]

@@ -98,3 +98,40 @@ class AdminPaymentSerializer(serializers.ModelSerializer):
             "razorpay_payment_id",
             "created_at",
         ]
+
+
+from django.contrib.auth import authenticate
+
+
+class AdminLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        user = authenticate(
+            username=data.get("username"),
+            password=data.get("password"),
+        )
+
+        if user is None:
+            raise serializers.ValidationError(
+                "Invalid admin username or password"
+            )
+
+        if not user.is_staff or not user.is_superuser:
+            raise serializers.ValidationError(
+                "Admin access denied"
+            )
+
+        if not hasattr(user, "admin_profile"):
+            raise serializers.ValidationError(
+                "Master admin profile not found"
+            )
+
+        if not user.admin_profile.is_master_admin:
+            raise serializers.ValidationError(
+                "Master admin access denied"
+            )
+
+        data["user"] = user
+        return data

@@ -9,10 +9,12 @@ from .views import (
     AdminPlanListView,
     AdminSubscriptionListView,
     AdminPaymentListView,
+    AdminLoginView,
 )
 
 
 urlpatterns = [
+    path("login/", AdminLoginView.as_view(), name="admin-login"),
     path("dashboard/", AdminDashboardStatsView.as_view(), name="admin-dashboard"),
     path("properties/", AdminPropertyListView.as_view(), name="admin-properties"),
     path(

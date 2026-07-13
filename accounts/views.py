@@ -5,6 +5,7 @@ from rest_framework.authtoken.models import Token
 
 from .serializers import RegisterSerializer, LoginSerializer
 
+
 # reg vendii use cheyyuna function
 class RegisterView(APIView):
     def post(self, request):
@@ -19,7 +20,8 @@ class RegisterView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#login vendi 
+
+# login vendi
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -37,6 +39,8 @@ class LoginView(APIView):
                         "email": user.email,
                         "phone": user.phone,
                         "role": user.role,
+                        "is_staff": user.is_staff,
+                        "is_superuser": user.is_superuser,
                     },
                 }
             )

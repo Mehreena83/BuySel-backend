@@ -163,7 +163,6 @@ STORAGES = {
 }
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 
 RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")

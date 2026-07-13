@@ -144,6 +144,35 @@ USE_I18N = True
 USE_TZ = True
 
 
+# STATIC_URL = "/static/"
+# STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# CLOUDINARY_STORAGE = {
+#     "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+#     "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+#     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
+# }
+
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+#     },
+# }
+
+# STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+
+# RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
+# RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
+
+
+# DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -164,9 +193,5 @@ STORAGES = {
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
-
-RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "")
-RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
-
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_USE_FINDERS = True

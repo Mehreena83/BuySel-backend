@@ -158,6 +158,13 @@ class AdminPaymentListView(generics.ListAPIView):
         return Payment.objects.all().order_by("-created_at")
     
 
+# class AdminPlanListCreateView(generics.ListCreateAPIView):
+#     serializer_class = AdminPlanSerializer
+#     permission_classes = [IsMasterAdmin]
+
+#     def get_queryset(self):
+#         return Plan.objects.all().order_by("price")
+
 class AdminPlanListCreateView(generics.ListCreateAPIView):
     serializer_class = AdminPlanSerializer
     permission_classes = [IsMasterAdmin]
@@ -165,7 +172,9 @@ class AdminPlanListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         return Plan.objects.all().order_by("price")
 
-
+    def post(self, request, *args, **kwargs):
+        print("POST REQUEST RECEIVED")
+        return super().post(request, *args, **kwargs)
 class AdminPlanDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AdminPlanSerializer
     permission_classes = [IsMasterAdmin]

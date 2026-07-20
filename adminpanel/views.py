@@ -222,3 +222,19 @@ class AdminToggleUserStatusView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+    
+
+class AdminDeletePropertyView(APIView):
+    permission_classes = [IsMasterAdmin]
+
+    def delete(self, request, pk):
+        property_obj = get_object_or_404(Property, id=pk)
+
+        property_obj.delete()
+
+        return Response(
+            {
+                "message": "Property deleted successfully."
+            },
+            status=status.HTTP_200_OK,
+        )

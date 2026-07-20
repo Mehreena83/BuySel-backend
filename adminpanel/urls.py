@@ -11,6 +11,7 @@ from .views import (
     AdminSubscriptionListView,
     AdminPaymentListView,
     AdminLoginView,
+    AdminToggleUserStatusView,
 )
 
 
@@ -74,4 +75,9 @@ urlpatterns = [
         AdminPaymentListView.as_view(),
         name="admin-payments",
     ),
+    path(
+    "users/<int:pk>/toggle-status/",
+    AdminToggleUserStatusView.as_view(),
+    name="admin-toggle-user-status",
+),
 ]

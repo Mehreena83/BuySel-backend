@@ -157,14 +157,6 @@ class AdminPaymentListView(generics.ListAPIView):
     def get_queryset(self):
         return Payment.objects.all().order_by("-created_at")
     
-
-# class AdminPlanListCreateView(generics.ListCreateAPIView):
-#     serializer_class = AdminPlanSerializer
-#     permission_classes = [IsMasterAdmin]
-
-#     def get_queryset(self):
-#         return Plan.objects.all().order_by("price")
-
 class AdminPlanListCreateView(generics.ListCreateAPIView):
     serializer_class = AdminPlanSerializer
     permission_classes = [IsMasterAdmin]
@@ -198,5 +190,35 @@ class AdminPlanDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(
             {"message": "Plan deleted successfully"},
+            status=status.HTTP_200_OK,
+        )
+    
+class AdminToggleUserStatusView(APIView):
+    permission_classes = [IsMasterAdmin]
+
+    def patch(self, request, pk):
+        user = get_object_or_404(User, id=pk)
+
+        # സ്വന്തം account block ചെയ്യാൻ പാടില്ല
+        if user == request.user:
+            return Response(
+                {
+                    "message": "You cannot block your own account."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.is_active = not user.is_active
+        user.save()
+
+        return Response(
+            {
+                "message": (
+                    "User activated successfully."
+                    if user.is_active
+                    else "User blocked successfully."
+                ),
+                "user": AdminUserSerializer(user).data,
+            },
             status=status.HTTP_200_OK,
         )

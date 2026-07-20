@@ -142,14 +142,6 @@ class AdminUserListView(generics.ListAPIView):
         return User.objects.all().order_by("-date_joined")
 
 
-class AdminPlanListView(generics.ListAPIView):
-    serializer_class = AdminPlanSerializer
-    permission_classes = [IsMasterAdmin]
-
-    def get_queryset(self):
-        return Plan.objects.all().order_by("price")
-
-
 class AdminSubscriptionListView(generics.ListAPIView):
     serializer_class = AdminSubscriptionSerializer
     permission_classes = [IsMasterAdmin]
@@ -164,3 +156,38 @@ class AdminPaymentListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Payment.objects.all().order_by("-created_at")
+    
+
+class AdminPlanListCreateView(generics.ListCreateAPIView):
+    serializer_class = AdminPlanSerializer
+    permission_classes = [IsMasterAdmin]
+
+    def get_queryset(self):
+        return Plan.objects.all().order_by("price")
+
+
+class AdminPlanDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AdminPlanSerializer
+    permission_classes = [IsMasterAdmin]
+    queryset = Plan.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        plan = self.get_object()
+
+        if plan.subscription_set.exists():
+            return Response(
+                {
+                    "message": (
+                        "This plan cannot be deleted because "
+                        "subscriptions are linked to it."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        plan.delete()
+
+        return Response(
+            {"message": "Plan deleted successfully"},
+            status=status.HTTP_200_OK,
+        )

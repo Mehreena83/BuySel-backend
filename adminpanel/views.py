@@ -60,21 +60,55 @@ class AdminDashboardStatsView(APIView):
     permission_classes = [IsMasterAdmin]
 
     def get(self, request):
+        recent_properties = Property.objects.all().order_by("-created_at")[:5]
+        recent_payments = Payment.objects.all().order_by("-created_at")[:5]
+
         data = {
             "total_users": User.objects.filter(role="user").count(),
             "total_agents": User.objects.filter(role="agent").count(),
+
             "total_properties": Property.objects.count(),
-            "pending_properties": Property.objects.filter(status="pending").count(),
-            "approved_properties": Property.objects.filter(status="approved").count(),
-            "rejected_properties": Property.objects.filter(status="rejected").count(),
+            "pending_properties": Property.objects.filter(
+                status="pending"
+            ).count(),
+            "approved_properties": Property.objects.filter(
+                status="approved"
+            ).count(),
+            "rejected_properties": Property.objects.filter(
+                status="rejected"
+            ).count(),
+
             "total_plans": Plan.objects.count(),
-            "active_subscriptions": Subscription.objects.filter(is_active=True).count(),
+
+            "active_subscriptions": Subscription.objects.filter(
+                is_active=True
+            ).count(),
+
             "total_payments": Payment.objects.count(),
-            "success_payments": Payment.objects.filter(status="success").count(),
-            "failed_payments": Payment.objects.filter(status="failed").count(),
+            "success_payments": Payment.objects.filter(
+                status="success"
+            ).count(),
+            "failed_payments": Payment.objects.filter(
+                status="failed"
+            ).count(),
+
+            "recent_properties": AdminPropertySerializer(
+                recent_properties,
+                many=True,
+                context={"request": request},
+            ).data,
+
+            "recent_payments": AdminPaymentSerializer(
+                recent_payments,
+                many=True,
+                context={"request": request},
+            ).data,
         }
 
-        return Response(data)
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class AdminPropertyListView(generics.ListAPIView):

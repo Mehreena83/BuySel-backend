@@ -12,8 +12,7 @@ from .views import (
     AdminPaymentListView,
     AdminLoginView,
     AdminToggleUserStatusView,
-        AdminDeletePropertyView,
-
+AdminPropertyDetailView,
 )
 
 
@@ -84,7 +83,7 @@ urlpatterns = [
 ),
 path(
     "properties/<int:pk>/",
-    AdminDeletePropertyView.as_view(),
-    name="admin-delete-property",
+    AdminPropertyDetailView.as_view(),
+    name="admin-property-detail",
 ),
 ]

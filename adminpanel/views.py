@@ -286,17 +286,76 @@ class AdminToggleUserStatusView(APIView):
         )
     
 
-class AdminDeletePropertyView(APIView):
+class AdminPropertyDetailView(
+    generics.RetrieveUpdateDestroyAPIView
+):
+    serializer_class = AdminPropertySerializer
     permission_classes = [IsMasterAdmin]
+    queryset = Property.objects.all()
 
-    def delete(self, request, pk):
-        property_obj = get_object_or_404(Property, id=pk)
+    parser_classes = [
+        MultiPartParser,
+        FormParser,
+        JSONParser,
+    ]
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+
+        property_obj = self.get_object()
+
+        serializer = self.get_serializer(
+            property_obj,
+            data=request.data,
+            partial=partial,
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        property_obj = serializer.save()
+
+        # Add new gallery images
+        gallery_images = request.FILES.getlist(
+            "gallery_images"
+        )
+
+        for image in gallery_images:
+            PropertyImage.objects.create(
+                property=property_obj,
+                image=image,
+            )
+
+        # Remove selected existing gallery images
+        remove_ids = request.data.get(
+            "remove_image_ids",
+            "[]",
+        )
+
+        try:
+            remove_ids = json.loads(remove_ids)
+        except (json.JSONDecodeError, TypeError):
+            remove_ids = []
+
+        if remove_ids:
+            PropertyImage.objects.filter(
+                property=property_obj,
+                id__in=remove_ids,
+            ).delete()
+
+        return Response(
+            self.get_serializer(property_obj).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, *args, **kwargs):
+        property_obj = self.get_object()
         property_obj.delete()
 
         return Response(
             {
-                "message": "Property deleted successfully."
+                "message": (
+                    "Property deleted successfully."
+                )
             },
             status=status.HTTP_200_OK,
         )

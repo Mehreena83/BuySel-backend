@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 
-
+import json
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework import generics, status
@@ -330,7 +330,6 @@ class AdminPropertyDetailView(
 
         property_obj = serializer.save()
 
-        # Newly uploaded gallery images
         gallery_images = request.FILES.getlist(
             "gallery_images"
         )
@@ -341,10 +340,9 @@ class AdminPropertyDetailView(
                 image=image,
             )
 
-        # Existing gallery images selected for deletion
         remove_image_ids = request.data.get(
             "remove_image_ids",
-            [],
+            "[]",
         )
 
         if isinstance(remove_image_ids, str):
@@ -355,6 +353,7 @@ class AdminPropertyDetailView(
             except (
                 json.JSONDecodeError,
                 TypeError,
+                ValueError,
             ):
                 remove_image_ids = []
 

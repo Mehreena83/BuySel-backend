@@ -5,7 +5,6 @@ from properties.models import Property
 from plans.models import Plan, Subscription
 from payments.models import Payment
 
-
 User = get_user_model()
 
 
@@ -56,6 +55,17 @@ class AdminPropertySerializer(serializers.ModelSerializer):
             "status",
             "expires_at",
             "created_at",
+            "total_floors",
+            "floor",
+            "parking",
+            "furnishing",
+            "floor_number",
+            "total_cents",
+            "price_per_cent",
+            "road_access",
+            "plot_type",
+            "commercial_type",
+            "built_up_area_sqft",
         ]
 
         read_only_fields = [
@@ -63,6 +73,7 @@ class AdminPropertySerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         ]
+
 
 class AdminPlanSerializer(serializers.ModelSerializer):
     class Meta:
@@ -130,24 +141,16 @@ class AdminLoginSerializer(serializers.Serializer):
         )
 
         if user is None:
-            raise serializers.ValidationError(
-                "Invalid admin username or password"
-            )
+            raise serializers.ValidationError("Invalid admin username or password")
 
         if not user.is_staff or not user.is_superuser:
-            raise serializers.ValidationError(
-                "Admin access denied"
-            )
+            raise serializers.ValidationError("Admin access denied")
 
         if not hasattr(user, "admin_profile"):
-            raise serializers.ValidationError(
-                "Master admin profile not found"
-            )
+            raise serializers.ValidationError("Master admin profile not found")
 
         if not user.admin_profile.is_master_admin:
-            raise serializers.ValidationError(
-                "Master admin access denied"
-            )
+            raise serializers.ValidationError("Master admin access denied")
 
         data["user"] = user
         return data

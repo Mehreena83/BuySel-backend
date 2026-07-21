@@ -22,9 +22,11 @@ from .serializers import (
     AdminPaymentSerializer,
     AdminLoginSerializer,
 )
-from datetime import timedelta
-from django.utils import timezone
-
+from rest_framework.parsers import (
+    MultiPartParser,
+    FormParser,
+    JSONParser,
+)
 
 User = get_user_model()
 
@@ -117,6 +119,12 @@ class AdminPropertyListView(generics.ListCreateAPIView):
     serializer_class = AdminPropertySerializer
     permission_classes = [IsMasterAdmin]
 
+    parser_classes = [
+        MultiPartParser,
+        FormParser,
+        JSONParser,
+    ]
+
     def get_queryset(self):
         queryset = Property.objects.all().order_by("-created_at")
 
@@ -128,10 +136,14 @@ class AdminPropertyListView(generics.ListCreateAPIView):
             queryset = queryset.filter(status=status_value)
 
         if property_type:
-            queryset = queryset.filter(property_type=property_type)
+            queryset = queryset.filter(
+                property_type=property_type
+            )
 
         if listing_type:
-            queryset = queryset.filter(listing_type=listing_type)
+            queryset = queryset.filter(
+                listing_type=listing_type
+            )
 
         return queryset
 
@@ -139,7 +151,6 @@ class AdminPropertyListView(generics.ListCreateAPIView):
         serializer.save(
             agent=self.request.user,
             status="approved",
-            expires_at=timezone.now() + timedelta(days=30),
         )
 class AdminApprovePropertyView(APIView):
     permission_classes = [IsMasterAdmin]

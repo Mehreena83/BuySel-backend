@@ -22,6 +22,8 @@ from .serializers import (
     AdminPaymentSerializer,
     AdminLoginSerializer,
 )
+from datetime import timedelta
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -137,8 +139,8 @@ class AdminPropertyListView(generics.ListCreateAPIView):
         serializer.save(
             agent=self.request.user,
             status="approved",
+            expires_at=timezone.now() + timedelta(days=30),
         )
-
 class AdminApprovePropertyView(APIView):
     permission_classes = [IsMasterAdmin]
 

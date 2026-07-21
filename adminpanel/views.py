@@ -10,7 +10,7 @@ from .permissions import IsMasterAdmin
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from properties.models import Property
+from properties.models import Property ,PropertyImage
 from plans.models import Plan, Subscription
 from payments.models import Payment
 from rest_framework.authtoken.models import Token
@@ -147,10 +147,20 @@ class AdminPropertyListView(generics.ListCreateAPIView):
 
         return queryset
 
-    def perform_create(self, serializer):
-        serializer.save(
-            agent=self.request.user,
-            status="approved",
+def perform_create(self, serializer):
+    property_obj = serializer.save(
+        agent=self.request.user,
+        status="approved",
+    )
+
+    gallery_images = self.request.FILES.getlist(
+        "gallery_images"
+    )
+
+    for image in gallery_images:
+        PropertyImage.objects.create(
+            property=property_obj,
+            image=image,
         )
 class AdminApprovePropertyView(APIView):
     permission_classes = [IsMasterAdmin]

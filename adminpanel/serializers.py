@@ -61,7 +61,6 @@ class AdminPropertySerializer(serializers.ModelSerializer):
         read_only_fields = [
             "agent",
             "status",
-            "expires_at",
             "created_at",
         ]
 

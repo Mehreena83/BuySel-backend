@@ -15,6 +15,12 @@ from .views import (
 AdminPropertyDetailView,
 )
 
+from notifications.views import (
+    AdminNotificationListView,
+    AdminNotificationUnreadCountView,
+    AdminNotificationMarkReadView,
+    AdminNotificationMarkAllReadView,
+)
 
 urlpatterns = [
     path(
@@ -85,5 +91,29 @@ path(
     "properties/<int:pk>/",
     AdminPropertyDetailView.as_view(),
     name="admin-property-detail",
+),
+
+path(
+    "notifications/",
+    AdminNotificationListView.as_view(),
+    name="admin-notifications",
+),
+
+path(
+    "notifications/unread-count/",
+    AdminNotificationUnreadCountView.as_view(),
+    name="admin-notification-unread-count",
+),
+
+path(
+    "notifications/<int:pk>/read/",
+    AdminNotificationMarkReadView.as_view(),
+    name="admin-notification-mark-read",
+),
+
+path(
+    "notifications/mark-all-read/",
+    AdminNotificationMarkAllReadView.as_view(),
+    name="admin-notifications-mark-all-read",
 ),
 ]

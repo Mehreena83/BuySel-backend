@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "payments",
     "properties",
     "adminpanel",
+        "notifications.apps.NotificationsConfig",
+
 ]
 
 

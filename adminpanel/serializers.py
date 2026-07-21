@@ -56,16 +56,16 @@ class AdminPropertySerializer(serializers.ModelSerializer):
             "expires_at",
             "created_at",
             "total_floors",
-            "floor",
+            "floors",
+            "total_cent",
+            "builtup_area_sqft",
             "parking",
             "furnishing",
             "floor_number",
-            "total_cents",
             "price_per_cent",
             "road_access",
             "plot_type",
             "commercial_type",
-            "built_up_area_sqft",
         ]
 
         read_only_fields = [

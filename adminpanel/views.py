@@ -111,7 +111,7 @@ class AdminDashboardStatsView(APIView):
         )
 
 
-class AdminPropertyListView(generics.ListAPIView):
+class AdminPropertyListView(generics.ListCreateAPIView):
     serializer_class = AdminPropertySerializer
     permission_classes = [IsMasterAdmin]
 
@@ -133,6 +133,11 @@ class AdminPropertyListView(generics.ListAPIView):
 
         return queryset
 
+    def perform_create(self, serializer):
+        serializer.save(
+            agent=self.request.user,
+            status="approved",
+        )
 
 class AdminApprovePropertyView(APIView):
     permission_classes = [IsMasterAdmin]

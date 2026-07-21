@@ -26,8 +26,14 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
 
 class AdminPropertySerializer(serializers.ModelSerializer):
-    agent_name = serializers.CharField(source="agent.username", read_only=True)
-    agent_email = serializers.CharField(source="agent.email", read_only=True)
+    agent_name = serializers.CharField(
+        source="agent.username",
+        read_only=True,
+    )
+    agent_email = serializers.CharField(
+        source="agent.email",
+        read_only=True,
+    )
 
     class Meta:
         model = Property
@@ -37,16 +43,27 @@ class AdminPropertySerializer(serializers.ModelSerializer):
             "agent_name",
             "agent_email",
             "title",
+            "description",
             "property_type",
             "listing_type",
             "price",
             "location",
+            "address",
+            "bedrooms",
+            "bathrooms",
+            "area_sqft",
             "main_image",
             "status",
             "expires_at",
             "created_at",
         ]
 
+        read_only_fields = [
+            "agent",
+            "status",
+            "expires_at",
+            "created_at",
+        ]
 
 class AdminPlanSerializer(serializers.ModelSerializer):
     class Meta:

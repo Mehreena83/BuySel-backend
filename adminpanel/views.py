@@ -114,8 +114,9 @@ class AdminDashboardStatsView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
-class AdminPropertyListView(generics.ListCreateAPIView):
+class AdminPropertyListView(
+    generics.ListCreateAPIView
+):
     serializer_class = AdminPropertySerializer
     permission_classes = [IsMasterAdmin]
 
@@ -126,14 +127,26 @@ class AdminPropertyListView(generics.ListCreateAPIView):
     ]
 
     def get_queryset(self):
-        queryset = Property.objects.all().order_by("-created_at")
+        queryset = Property.objects.all().order_by(
+            "-created_at"
+        )
 
-        status_value = self.request.query_params.get("status")
-        property_type = self.request.query_params.get("property_type")
-        listing_type = self.request.query_params.get("listing_type")
+        status_value = self.request.query_params.get(
+            "status"
+        )
+
+        property_type = self.request.query_params.get(
+            "property_type"
+        )
+
+        listing_type = self.request.query_params.get(
+            "listing_type"
+        )
 
         if status_value:
-            queryset = queryset.filter(status=status_value)
+            queryset = queryset.filter(
+                status=status_value
+            )
 
         if property_type:
             queryset = queryset.filter(
@@ -147,21 +160,25 @@ class AdminPropertyListView(generics.ListCreateAPIView):
 
         return queryset
 
-def perform_create(self, serializer):
-    property_obj = serializer.save(
-        agent=self.request.user,
-        status="approved",
-    )
-
-    gallery_images = self.request.FILES.getlist(
-        "gallery_images"
-    )
-
-    for image in gallery_images:
-        PropertyImage.objects.create(
-            property=property_obj,
-            image=image,
+    def perform_create(self, serializer):
+        property_obj = serializer.save(
+            agent=self.request.user,
+            status="approved",
         )
+
+        gallery_images = (
+            self.request.FILES.getlist(
+                "gallery_images"
+            )
+        )
+
+        for image in gallery_images:
+            PropertyImage.objects.create(
+                property=property_obj,
+                image=image,
+            )
+
+
 class AdminApprovePropertyView(APIView):
     permission_classes = [IsMasterAdmin]
 
@@ -285,7 +302,6 @@ class AdminToggleUserStatusView(APIView):
             status=status.HTTP_200_OK,
         )
     
-
 class AdminPropertyDetailView(
     generics.RetrieveUpdateDestroyAPIView
 ):
@@ -314,7 +330,7 @@ class AdminPropertyDetailView(
 
         property_obj = serializer.save()
 
-        # Add new gallery images
+        # Newly uploaded gallery images
         gallery_images = request.FILES.getlist(
             "gallery_images"
         )
@@ -325,21 +341,30 @@ class AdminPropertyDetailView(
                 image=image,
             )
 
-        # Remove selected existing gallery images
-        remove_ids = request.data.get(
+        # Existing gallery images selected for deletion
+        remove_image_ids = request.data.get(
             "remove_image_ids",
-            "[]",
+            [],
         )
 
-        try:
-            remove_ids = json.loads(remove_ids)
-        except (json.JSONDecodeError, TypeError):
-            remove_ids = []
+        if isinstance(remove_image_ids, str):
+            try:
+                remove_image_ids = json.loads(
+                    remove_image_ids
+                )
+            except (
+                json.JSONDecodeError,
+                TypeError,
+            ):
+                remove_image_ids = []
 
-        if remove_ids:
+        if not isinstance(remove_image_ids, list):
+            remove_image_ids = []
+
+        if remove_image_ids:
             PropertyImage.objects.filter(
                 property=property_obj,
-                id__in=remove_ids,
+                id__in=remove_image_ids,
             ).delete()
 
         return Response(

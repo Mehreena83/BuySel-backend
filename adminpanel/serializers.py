@@ -31,6 +31,72 @@ class AdminPropertyImageSerializer(serializers.ModelSerializer):
             "image",
         ]
 
+
+class AdminPropertySerializer(serializers.ModelSerializer):
+    agent_name = serializers.CharField(
+        source="agent.username",
+        read_only=True,
+    )
+
+    agent_email = serializers.CharField(
+        source="agent.email",
+        read_only=True,
+    )
+
+    images = AdminPropertyImageSerializer(
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = Property
+
+        fields = [
+            "id",
+            "agent",
+            "agent_name",
+            "agent_email",
+
+            "title",
+            "description",
+            "property_type",
+            "listing_type",
+            "price",
+            "location",
+            "address",
+
+            "bedrooms",
+            "bathrooms",
+            "area_sqft",
+
+            "total_floors",
+            "floors",
+            "parking",
+            "furnishing",
+            "floor_number",
+
+            "total_cent",
+            "price_per_cent",
+            "road_access",
+            "plot_type",
+
+            "commercial_type",
+            "builtup_area_sqft",
+
+            "main_image",
+            "images",
+
+            "status",
+            "expires_at",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "agent",
+            "status",
+            "created_at",
+        ]
+
 class AdminPropertySerializer(serializers.ModelSerializer):
     agent_name = serializers.CharField(
         source="agent.username",
